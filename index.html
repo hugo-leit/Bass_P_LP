@@ -1,0 +1,1483 @@
+<title>Bass Persuades Party</title>
+<style>
+  :root{
+    --bg:#0D0D11;
+    --surface:#151519;
+    --surface-2:#1C1C22;
+    --line:#2A2A31;
+    --text:#F2F1ED;
+    --text-dim:#9A9AA3;
+    --red:#FF2A2A;
+    --red-dim:#4d1414;
+    --chrome:#C6C6CC;
+    --acid:#FFB800;
+    --acid-dim:#3a2c05;
+    --star-off:#3A3A42;
+    font-synthesis: none;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      /* subject is a nocturnal rave record — keep it dark even on light system theme */
+    }
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:none;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+  }
+  html{height:100%; overscroll-behavior-y:none;}
+
+  h1,h2,h3,.mono,.label,button,input{
+    font-family:'JetBrains Mono','SFMono-Regular',Menlo,monospace;
+  }
+
+  ::selection{ background:var(--red); color:#fff; }
+
+  .noise{
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.035; mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .app{
+    position:relative; z-index:1;
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    max-width:560px;
+    width:100%;
+    margin:0 auto;
+  }
+
+  [hidden]{ display:none !important; }
+
+  /* ---------- generic bits ---------- */
+  .eyebrow{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--red);
+    font-weight:700;
+  }
+  .btn{
+    -webkit-tap-highlight-color:transparent;
+    min-height:48px;
+    padding:0 20px;
+    border-radius:3px;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    color:var(--text);
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn-primary{
+    background:linear-gradient(180deg, #ff3b3b, var(--red));
+    border-color:var(--red);
+    color:#fff;
+    box-shadow:0 0 0 1px rgba(255,42,42,.35), 0 10px 24px -10px rgba(255,42,42,.55);
+  }
+  .btn-primary:disabled{
+    opacity:.4; box-shadow:none; filter:grayscale(.4);
+  }
+  .btn-ghost{
+    background:transparent;
+  }
+  .btn-block{ width:100%; }
+  .btn[disabled]{ pointer-events:none; }
+
+  /* ---------- Screen 1: welcome ---------- */
+  #screen-welcome{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:32px 24px calc(32px + env(safe-area-inset-bottom,0px));
+    gap:28px;
+  }
+  .glitch-title{
+    line-height:.92;
+    text-transform:uppercase;
+    font-weight:800;
+    letter-spacing:-.01em;
+  }
+  .glitch-title .l1{
+    font-size:clamp(38px,11vw,58px);
+    color:var(--text);
+    display:block;
+  }
+  .glitch-title .l2{
+    font-size:clamp(38px,11vw,58px);
+    display:block;
+    color:var(--red);
+    text-shadow:2px 0 0 var(--chrome), -2px 0 0 rgba(255,184,0,.5);
+    position:relative;
+  }
+  .subline{
+    color:var(--text-dim);
+    font-size:13px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+    margin-top:2px;
+  }
+  .field-label{
+    font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--chrome); margin-bottom:8px; display:block;
+  }
+  input[type="text"]{
+    width:100%;
+    min-height:52px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--red);
+    color:var(--text);
+    font-size:16px;
+    padding:0 14px;
+    border-radius:2px;
+    outline:none;
+  }
+  input[type="text"]:focus{ border-color:var(--acid); border-left-color:var(--acid); }
+  input[type="text"]::placeholder{ color:#5c5c66; }
+
+  /* ---------- Screen 2: tracklist ---------- */
+  #screen-tracklist{
+    flex:1; display:flex; flex-direction:column; min-height:0;
+  }
+  .top-bar{
+    padding:calc(16px + env(safe-area-inset-top,0px)) 20px 14px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg);
+  }
+  .top-bar .row-between{
+    display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;
+  }
+  .guest-tag{ font-size:12px; color:var(--text-dim); }
+  .guest-tag b{ color:var(--acid); font-weight:700; }
+  .progress-track{
+    height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden; border:1px solid var(--line);
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg,var(--red),var(--acid));
+    box-shadow:0 0 10px rgba(255,42,42,.6);
+    transition:width .3s ease;
+  }
+  .progress-text{ font-size:11px; letter-spacing:.08em; color:var(--text-dim); margin-top:8px; text-transform:uppercase; }
+
+  .tracklist{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 16px calc(96px + env(safe-area-inset-bottom,0px));
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .track-card{
+    display:flex; align-items:center; gap:14px;
+    min-height:64px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:12px 14px;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .track-card:active{ border-color:var(--red); }
+  .track-num{
+    font-size:13px; color:var(--text-dim); width:22px; flex-shrink:0; font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .track-meta{ flex:1; min-width:0; }
+  .track-title{ font-size:15px; font-weight:600; font-family:'Archivo',sans-serif; color:var(--text); }
+  .track-artist{ font-size:11px; color:var(--text-dim); margin-top:2px; letter-spacing:.02em; }
+  .badge{
+    flex-shrink:0;
+    font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    padding:5px 8px; border-radius:99px; border:1px solid var(--line);
+    color:var(--text-dim);
+  }
+  .badge.done{ color:#0D0D11; background:var(--acid); border-color:var(--acid); }
+  .badge.pending{ color:var(--red); border-color:var(--red-dim); background:rgba(255,42,42,.08); }
+
+  .verdict-cta-wrap{
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(180deg, rgba(13,13,17,0), var(--bg) 30%);
+  }
+  .verdict-cta{
+    max-width:560px; margin:0 auto;
+  }
+
+  /* ---------- Screen 3: detail ---------- */
+  #screen-detail{
+    flex:1; display:flex; flex-direction:column; min-height:0;
+  }
+  .detail-header{
+    padding:calc(14px + env(safe-area-inset-top,0px)) 18px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg);
+    display:flex; align-items:center; gap:12px;
+  }
+  .detail-header .num-chip{
+    font-size:12px; font-weight:800; color:var(--acid); border:1px solid var(--acid-dim); background:var(--acid-dim);
+    border-radius:3px; padding:4px 8px; flex-shrink:0;
+  }
+  .detail-header .titles{ min-width:0; }
+  .detail-header .titles .t{ font-size:16px; font-weight:700; font-family:'Archivo',sans-serif; color:var(--text); line-height:1.15; }
+  .detail-header .titles .a{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .icon-btn{
+    margin-left:auto;
+    width:40px; height:40px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); border-radius:3px; background:var(--surface-2); color:var(--text-dim);
+    font-size:13px; cursor:pointer;
+  }
+
+  .detail-scroll{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:0 0 calc(90px + env(safe-area-inset-bottom,0px));
+  }
+
+  .lyrics-panel{
+    margin:16px 16px 18px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--red);
+    border-radius:4px;
+    padding:16px 16px 18px;
+  }
+  .lyrics-panel .lp-label{
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--chrome); margin-bottom:10px;
+  }
+  .lyrics-body{
+    max-height:34vh;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    white-space:pre-wrap;
+    font-family:'Archivo',sans-serif;
+    font-size:14.5px;
+    line-height:1.7;
+    color:#DEDEDC;
+    padding-right:4px;
+  }
+  .lyrics-body.empty{ color:var(--text-dim); font-style:italic; font-size:13.5px; }
+
+  .rate-panel{
+    margin:0 16px 16px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px;
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .rate-row{ display:flex; flex-direction:column; gap:8px; }
+  .rate-row-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .rate-row-head .rl{ font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--text); font-weight:700; }
+  .rate-row-head .rl small{ display:block; font-size:10px; color:var(--text-dim); text-transform:none; letter-spacing:0; font-weight:400; margin-top:2px; font-family:'Archivo',sans-serif; }
+  .stars{ display:flex; gap:4px; }
+  .star-btn{
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center;
+    background:none; border:none; padding:0; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .star-btn svg{ width:26px; height:26px; }
+  .star-btn .star-shape{ fill:var(--star-off); stroke:var(--star-off); stroke-width:1; transition:fill .1s, stroke .1s; }
+  .star-btn.on .star-shape{ fill:var(--acid); stroke:var(--acid); filter:drop-shadow(0 0 4px rgba(255,184,0,.6)); }
+
+  .hottake-row{ display:flex; flex-direction:column; gap:8px; }
+  .hottake-row label{ font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--text); font-weight:700; }
+  textarea{
+    width:100%; min-height:60px; resize:vertical;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:3px;
+    color:var(--text); font-size:16px; font-family:'Archivo',sans-serif;
+    padding:10px 12px; outline:none; line-height:1.4;
+  }
+  textarea:focus{ border-color:var(--acid); }
+
+  .detail-nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    display:flex; gap:8px;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--surface);
+    border-top:1px solid var(--line);
+  }
+  .detail-nav .btn{ flex:1; padding:0 10px; font-size:12px; }
+  .detail-nav .btn span.arrow{ font-size:14px; }
+
+  /* ---------- Screen 4: verdict ---------- */
+  #screen-verdict{ flex:1; display:flex; flex-direction:column; min-height:0; }
+  .verdict-header{
+    padding:calc(18px + env(safe-area-inset-top,0px)) 20px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .verdict-header .eyebrow{ margin-bottom:6px; }
+  .verdict-header h2{
+    font-size:26px; margin:0; text-transform:uppercase; letter-spacing:-.01em; font-weight:800;
+    color:var(--text);
+  }
+  .verdict-scroll{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:18px 18px calc(28px + env(safe-area-inset-bottom,0px));
+    display:flex; flex-direction:column; gap:28px;
+  }
+  .vsection h3{
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--chrome); margin:0 0 12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .vsection h3::before{
+    content:""; width:8px; height:8px; background:var(--red); display:inline-block; transform:rotate(45deg);
+    box-shadow:0 0 6px rgba(255,42,42,.7);
+  }
+  .rank-row{
+    display:flex; align-items:center; gap:12px;
+    padding:11px 12px;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    margin-bottom:8px;
+  }
+  .rank-row.top1{ border-color:var(--acid); box-shadow:0 0 0 1px rgba(255,184,0,.25), 0 8px 20px -12px rgba(255,184,0,.5); }
+  .rank-row.top2{ border-color:var(--chrome); }
+  .rank-row.top3{ border-color:#B5651D; }
+  .medal{ font-size:18px; width:26px; text-align:center; flex-shrink:0; }
+  .rank-pos{ font-size:13px; color:var(--text-dim); width:20px; flex-shrink:0; font-weight:700; }
+  .rank-name{ flex:1; min-width:0; font-size:14px; font-weight:600; font-family:'Archivo',sans-serif; }
+  .rank-name .rn-artist{ display:block; font-size:10.5px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; margin-top:1px; }
+  .rank-score{
+    font-size:14px; font-weight:800; color:var(--acid); flex-shrink:0; font-variant-numeric:tabular-nums;
+  }
+  .rank-score small{ color:var(--text-dim); font-weight:400; font-size:10px; }
+  .empty-note{
+    font-size:13px; color:var(--text-dim); padding:14px; text-align:center; border:1px dashed var(--line); border-radius:4px;
+  }
+  .verdict-actions{
+    display:flex; gap:10px; padding-top:6px; border-top:1px solid var(--line); margin-top:4px;
+  }
+  .verdict-actions .btn{ flex:1; font-size:12px; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="noise"></div>
+<div class="app">
+
+  <!-- SCREEN 1 : WELCOME -->
+  <section id="screen-welcome">
+    <div>
+      <div class="eyebrow">Private Listening Party</div>
+      <div class="glitch-title">
+        <span class="l1">BASS</span>
+        <span class="l2">PERSUADES</span>
+      </div>
+      <div class="subline">10 faixas &middot; MILEY &middot; avaliação ao vivo</div>
+    </div>
+    <div>
+      <label class="field-label" for="guest-name-input">Seu nome / apelido</label>
+      <input type="text" id="guest-name-input" placeholder="ex: Dani" maxlength="24" autocomplete="off" autocapitalize="words">
+    </div>
+    <button class="btn btn-primary btn-block" id="btn-start" type="button" style="min-height:54px; font-size:15px;">
+      Iniciar Audição
+    </button>
+  </section>
+
+  <!-- SCREEN 2 : TRACKLIST -->
+  <section id="screen-tracklist" hidden>
+    <div class="top-bar">
+      <div class="row-between">
+        <div class="guest-tag">Ouvindo: <b id="guest-name-display">—</b></div>
+        <div class="eyebrow" style="color:var(--chrome);">Tracklist</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-text" id="progress-text">0 de 10 faixas avaliadas</div>
+    </div>
+    <div class="tracklist" id="tracklist"></div>
+    <div class="verdict-cta-wrap">
+      <button class="btn btn-primary btn-block verdict-cta" id="btn-goto-verdict" type="button">Ver Veredito / Desvendar Ranking</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3 : DETAIL -->
+  <section id="screen-detail" hidden>
+    <div class="detail-header">
+      <div class="num-chip" id="detail-num">01</div>
+      <div class="titles">
+        <div class="t" id="detail-title">—</div>
+        <div class="a" id="detail-artist">—</div>
+      </div>
+      <button class="icon-btn" id="btn-detail-close" type="button" aria-label="Voltar para tracklist">✕</button>
+    </div>
+
+    <div class="detail-scroll">
+      <div class="lyrics-panel">
+        <div class="lp-label">Letra</div>
+        <div class="lyrics-body" id="lyrics-body"></div>
+      </div>
+
+      <div class="rate-panel">
+        <div class="rate-row" data-metric="sound">
+          <div class="rate-row-head">
+            <div class="rl">Sonoridade / Produção<small>mix, batida, textura</small></div>
+          </div>
+          <div class="stars" data-stars="sound"></div>
+        </div>
+        <div class="rate-row" data-metric="lyrics">
+          <div class="rate-row-head">
+            <div class="rl">Letra / Composição<small>escrita, storytelling</small></div>
+          </div>
+          <div class="stars" data-stars="lyrics"></div>
+        </div>
+        <div class="rate-row" data-metric="vibe">
+          <div class="rate-row-head">
+            <div class="rl">Vibe / Replay Value<small>quer ouvir de novo?</small></div>
+          </div>
+          <div class="stars" data-stars="vibe"></div>
+        </div>
+        <div class="hottake-row">
+          <label for="hottake-input">Hot Take (opcional)</label>
+          <textarea id="hottake-input" placeholder="ex: essa bassline ao vivo vai ser insana"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-nav">
+      <button class="btn" id="btn-prev" type="button"><span class="arrow">←</span> Anterior</button>
+      <button class="btn" id="btn-tracklist" type="button">Tracklist</button>
+      <button class="btn btn-primary" id="btn-next" type="button">Próxima <span class="arrow">→</span></button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4 : VERDICT -->
+  <section id="screen-verdict" hidden>
+    <div class="verdict-header">
+      <div class="eyebrow">O Veredito</div>
+      <h2>Ranking da Noite</h2>
+    </div>
+    <div class="verdict-scroll">
+      <div class="vsection">
+        <h3>Ranking Geral</h3>
+        <div id="rank-overall"></div>
+      </div>
+      <div class="vsection">
+        <h3>Top 5 — Melhores Produções</h3>
+        <div id="rank-sound"></div>
+      </div>
+      <div class="vsection">
+        <h3>Top 5 — Melhores Letras</h3>
+        <div id="rank-lyrics"></div>
+      </div>
+      <div class="verdict-actions">
+        <button class="btn btn-block" id="btn-back-tracklist" type="button">← Tracklist</button>
+        <button class="btn btn-ghost btn-block" id="btn-reset" type="button" style="border-color:var(--red-dim); color:var(--red);">Refazer Avaliações</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "bassPersuadesParty_v1";
+
+ const tracks = [
+  {
+    id: 1,
+    title: "Bass Persuades",
+    artist: "MILEY",
+    lyrics: `
+Let's go
+
+Step into the scene, you won't catch an eye
+Walk into the party like the party is mine
+Paving over pastures 'cause horses are gone
+Forgetting there's a world when this record is on
+Ghosts run to Bermuda 'cause there's no one to haunt
+Candy's cut with fentanyl that nobody wants
+Spin it for a minute, make it all disappear
+If we ain't moving, baby, baby, why are we here?
+
+And I don't wanna change your mind
+The bass persuades
+No, I don't wanna change your mind (Let's go)
+
+The kids don't wanna dance, the kids don't wanna dance (Mhm)
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Let's surrender to the night, put our bodies close together, uh-huh
+
+Glued your eyes to the telephone screen
+But you missed the hit without MTV
+Go analog (Yeah) like a cinema (Yeah)
+Just look out the window and what do you see?
+In the treetops, it's a clear shot
+Yeah, chaos is king, but you know that you can't stop, won't stop
+New fit is a monster
+Love it so much, go hang it on a poster
+
+And I don't wanna change your mind
+The bass persuades
+No, I don't wanna change your mind (Let's go)
+
+The kids don't wanna dance, the kids don't wanna dance (Mhm)
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Let's surrender to the night, put our bodies close together, uh-huh
+The kids don't wanna dance, the kids don't wanna dance (Don't you want to dance? Mhm)
+The kids don't wanna dance, the kids don't wanna dance (Don't you want to dance?)
+We can't stay like this forever
+Let's surrender to the night, put our bodies close together, uh-huh
+
+You feel something in the music
+You don't know what it is
+But I can see it in your eyes
+You want to lose yourself to this, let's go
+
+Don't you want to dance? (Uh-huh, mhm)
+Don't you want to dance? (Uh-huh, mhm)
+Don't you want to dance? (Mhm-hm)
+Stay forever, surrender, put our bodies close together, uh
+
+The kids don't wanna dance, the kids don't wanna dance (Don't you want to dance? Uh-huh, mhm)
+The kids don't wanna dance, the kids don't wanna dance (Don't you want to dance?)
+We can't stay like this forever (Mhm)
+Let's surrender to the night, put our bodies close together, uh-huh
+The kids don't wanna dance, the kids don't wanna dance (Don't you want to dance? Mhm)
+The kids don't wanna dance, the kids don't wanna dance (Don't you want to dance?)
+We can't stay like this forever (Mhm)
+Wait forever, surrender, put our bodies close together, uh
+`
+  },
+  {
+    id: 2,
+    title: "Different Religion (feat. Model/Actriz)",
+    artist: "MILEY",
+    lyrics: `
+I've got my own god
+He drives a fast car
+I've got my own god
+He makes some loud noise
+I've got my own god
+My god's a hot boy
+
+I want to be saved by a different religion
+I crave to believe him
+We don't need forgiveness
+I want to be saved by a different religion
+Ooh, ooh, ooh, ooh
+I've got my own god
+
+I've got my own god
+Headlights on, crawl the pavement
+Top down, I don't care if heaven is behind us
+In the rear view, every passing exit
+My faith is his hard body, cracked leather
+
+I want to be saved by a different religion
+I crave to believe him
+We don't need forgiveness
+I want to be saved by a different religion
+Ooh, ooh, ooh, ooh
+I've got my own god
+
+Ooh
+I've got a different religion
+Ooh (I like him)
+And he's giving me Jesus
+Ooh
+Such an immaculate figure
+Ooh
+He's kinda different
+
+I've got my own god
+He's coming for me now
+Shadows dance like angels on the ceiling
+I know I'm not forgiven yet
+Bite my neck, but don't forget the gold fangs
+I still ride beside him
+Every time we kiss, it's like the real thing
+
+I want to be saved by a different religion
+I crave to believe him
+We don't need forgiveness
+I want to be saved by a different religion
+Ooh, ooh, ooh, ooh
+
+I want to be saved by a different religion (I got a different religion)
+I crave to believe him
+We don't need forgiveness (And he's giving me Jesus)
+I want to be saved by a different religion (Such an immaculate figure)
+Ooh, ooh, ooh, ooh (He's kinda different)
+
+Love
+Losing our innocence
+Truth
+Give in to sin again
+Bitch
+Take it to genesis
+Amen
+We're gonna begin again, ah
+Love
+Losing our innocence
+Truth
+Give in to sin again
+Bitch
+Take it to genesis
+Amen
+We're gonna begin again, ah
+Love
+Losing our innocence
+Truth
+Give in to sin again
+Bitch
+Take it to genesis
+Amen
+We're gonna begin again, ah
+Love
+Losing our innocence
+Truth
+Give in to sin again
+Bitch
+Take it to genesis
+Amen
+We're gonna begin again, ah
+`
+  },
+  {
+    id: 3,
+    title: "Let's Get Married",
+    artist: "MILEY",
+    lyrics: `
+Godspeed
+Forever ahead
+Baby, don't blink
+Keep staring at me instead
+
+What did I do to deserve you?
+What did I do to deserve you?
+
+Let's go get married tonight
+Let's get married
+I'm having visions of white
+Let's get married
+Let's turn the rest of our lives to a holiday
+Any time, any place, we can run away
+Get married tonight (Diamonds dancin' on me)
+Let's get married
+
+Godspeed
+Forever ahead
+Ooh, until the long sleep
+I'll turn your arms to my bed
+Then he said
+
+"Baby, what did I do to deserve you?
+Tell me, what did I do to deserve you?"
+
+Let's go get married tonight (Diamonds dancin' on me)
+Let's get married
+I'm having visions of white (Diamonds dancin' on me)
+Let's get married
+Let's turn the rest of our lives to a holiday
+Any time, any place
+We can run away
+Get married tonight
+Let's get married
+
+What did I do to deserve you?
+What did I do to deserve you?
+`
+  },
+  {
+    id: 4,
+    title: "Orbit",
+    artist: "MILEY",
+    lyrics: `
+
+Place a marble on the floor
+When you walk in the room, it'll roll to you
+Pull me up onto your shore
+Like oceans and the moon lose control to you
+
+'Cause when you look at me, it's primal
+When you wave to me, it's tidal
+And the gravity is vital, else I'd float away
+And the feeling, I can't shake it
+And the spell, I just can't break it
+Yeah, the gravity is vital, else I'd float away
+
+Oh, my feet are off the ground
+Whenever you're around
+I wanna orbit you
+Orbit you
+And we don't have to touch
+'Cause close is close enough
+I wanna orbit you
+Yeah, orbit you
+Forever
+Forever
+
+Every star in every sky is shining on demand
+I'm on to you
+You
+And I would bend all space and time
+To fall into your hands
+I'm drawn to you
+I belong to you
+
+'Cause when you look at me, it's primal
+When you wave to me, it's tidal
+And the gravity is vital, else I'd float away
+And the feeling, I can't shake it
+And the spell, I just can't break it
+Yeah, the gravity is vital, else I'd float away
+
+Oh, my feet are off the ground
+Whenever you're around
+I wanna orbit you
+Yeah, orbit you
+And we don't have to touch
+'Cause close is close enough
+I wanna orbit you
+Yeah, orbit you
+
+Forever
+Forever
+Oh, forever
+Forever
+Place a marble on the floor
+When you walk in the room, it'll roll to you
+`
+  },
+  {
+    id: 5,
+    title: "Aftermath",
+    artist: "MILEY",
+    lyrics: `
+
+I built a bunker in the back of my mind
+The walls were a dream
+The roof was Lucite
+There was art in the halls that was never ours
+The scaffolds fell
+The comet fired
+
+Does it all come closer or just the sound?
+I'm sick of poets and being profound
+You bathe in the sweat
+Your mouth like a straw
+You're calloused but soft
+You trace every flaw
+
+You were mine
+You were mine
+You were mine
+You were never mine
+You were mine (Do you ever think of me now and then?)
+You were mine (Do you ever fall into pieces?)
+You were mine
+Do you ever think of me now and then? (You were never mine)
+Don't avoid the question
+
+I miss the future like a face I forgot
+Like worms miss the earth in the bottom of a pot
+Yeah, I miss the future
+It's mirrors and smoke
+It's mirrors and more mirrors
+And you're in on the joke
+
+Does it all come closer or just the sound?
+I'm sick of poets being profound
+You bathe in the sweat
+Your mouth like a straw
+You're callous but soft
+You trace every flaw
+
+You were mine, oh
+You were mine, oh
+You were mine, oh
+You were never mine
+
+You were mine (Do you ever think of me now and then?)
+Do you ever fall into pieces?
+You were never mine (Do you ever think of me now and then?)
+You were never mine (Don't avoid the question)
+You were mine (Do you ever think of me now and then?)
+You were mine (Do you ever fall into pieces?)
+You were mine (Do you ever think of me now and then?)
+You were never mine (Don't avoid the question)
+`
+  },
+  {
+    id: 6,
+    title: "REDLIGHTS",
+    artist: "MILEY",
+    lyrics: `
+Been free like birds and got wild like white horses in the night, my love
+Driving with red lights behind us and cliff sides on the right, uh-huh
+I see it in your eyes
+You're worried with goodbye
+
+We share the bed now like lovers
+Just only to depart, the pain
+Your lips like berries that carried a medicine
+So sweet and so strange
+Truth is all we need
+And also what I fear
+
+But when I'm summoned to the sky
+I won't fear anything
+Even enjoy that last goodbye
+'Cause I have something to believe in
+And baby, you're the reason
+I'll turn my face up toward the light
+Surrender lovingly and disappear into the night
+I have my something to believe in
+And baby, you're the reason
+
+I only follow direction
+From the map across your hand, uh-huh
+Take me to countries where jewelry's still buried in the sand, uh-huh
+Anywhere you go
+I will also go
+
+So when I'm summoned to the sky
+I won't fear anything
+Even enjoy that last goodbye
+'Cause I have something to believe in
+And baby, you're the reason
+I'll turn my face up toward the light
+Surrender lovingly and disappear into the night
+I have my something to believe in
+And baby, you're the reason
+I'll turn my face up toward the light
+And kiss you lovingly and disappear into the night
+'Cause anywhere you go
+I will also go
+'Cause anywhere you go
+I will also go
+`
+  },
+  {
+    id: 7,
+    title: "Neon Signs (feat. Andrew Wyatt)",
+    artist: "MILEY",
+    lyrics: `
+You've reached Andrew
+Please leave a message, thanks
+
+Turn on the TV so its color floods the air
+Someone to love, someone to care
+Take off the pillows and then throw them to the chair
+The curtains close, so close, oh yeah
+
+The smell of tangerine (You smell of tangerines)
+A little bittersweet
+
+I, I may not be your kind
+But I could be your late night company
+And you can find me under neon signs
+'Cause I, I'm just your late night company
+
+I shave my legs, and I, I put on lotion
+Only thing that's on my skin
+So close to nothing
+But a poodle-shaped bruise
+Just the lotion and you
+Oh yeah
+
+The smell of tangerine (You smell of tangerines)
+A little bittersweet
+So calm down, baby
+
+I, I may not be your kind
+But I could be your late night company
+And you can find me under neon signs
+'Cause I, I'm just your late night company
+
+I can't live without you
+Is this a dream?
+I love you, Miley
+I love you more
+I've been waiting for this
+
+I, I may not be your kind
+But I could be your late night company
+And you can find me under neon signs
+'Cause I, I'm just your late night company
+
+You're so beautiful
+Some people say I'm creepy
+But others think I'm just right
+You're perfect
+So perfect
+You are so beautiful to me
+Really?
+And I've been wanting to see you now
+
+`
+  },
+  {
+    id: 8,
+    title: "Innocent Ways",
+    artist: "MILEY",
+    lyrics: `
+Sisters
+I want better for my sister
+She calls me only when it's late night, and she's high
+Her mind is spinning, ugh
+Eight nights in a row
+She's been in a crisis
+She looks just like me, yeah, when she cries
+Now that we're both older, ugh
+
+I tried to save all of her innocent ways
+Grace comes with age, but don't tell her
+Fall out from the fame, claim my mother's maiden name
+Lips in crimson shades, how I love her
+
+Oh, her face is made of stone till you get her alone
+Heart is made of chrome till you get her alone
+Girl puts on a show, only know what she shows ya
+Yeah
+
+I made the error
+I kinda caved when I know better
+I should've never sent that letter
+But I was wired and in my feelings
+I wonder
+If she went and changed her number
+I tried to call her three times over
+Is she alright? It keeps on ringing, ugh
+
+I tried to save all of her innocent ways
+Grace comes with age, but don't tell her
+Fall out from the fame, claim my mother's maiden name
+Lips in crimson shades, how I love her
+
+Girl puts on a show, only know what she shows ya
+Yeah
+
+She grabs her shoes from by the door
+Make sure they match her skirt, yeah
+Won't dance to Blondie anymore
+But she's got them on her shirt
+God knows I liked them first
+Cigarettes from the store
+She wants to feel that burn, yeah
+Won't dance to Blondie anymore
+She's got them on her shirt
+She knows I liked them first (Work)
+
+I tried to save all of her innocent ways
+Grace comes with age, but don't tell her
+Fall out from the fame, claim my mother's maiden name
+Lips in crimson shades, how I love her
+
+Oh, her face is made of stone till you get her alone
+Heart is made of chrome till you get her alone
+Girl puts on a show, only know what she shows ya
+Yeah
+`
+  },
+  {
+    id: 9,
+    title: "Snow",
+    artist: "MILEY",
+    lyrics: `
+We've got our backs on the floor
+Can't believe that we're bored
+We shouldn't be in Kyoto
+We've never been here before
+We end up turning the page
+A requiem for the day
+And now we're moving in slo–mo
+Mundane is melting away, oh
+
+Now your knee's in the dirt as I hold out my left
+You should swallow the nerves 'cause there's yes on my breath
+
+It's a cold night, my skin is tight
+No stopping as we move in slow
+It's written in your wide eyes, forever skies
+Together, we both fall like snow
+Together, we both fall, fall
+Together, we both fall, fall
+Together, we both fall, fall
+Together, we both fall, fall
+
+I gave you my hand
+You pull me against your chest
+I know I've seen everything
+With you, I'd see it again and again
+Under covers, I'd hide
+But now it doesn't seem right
+Now my skin feels exposed
+Yeah, you bring me to life for life
+
+Oh, your knee left the dirt, and there's mud on your jeans
+Baby, pull me in close, let me borrow your heat
+
+It's a cold night, my skin is tight
+No stopping as we move in slow
+It's written in your wide eyes, forever skies
+Together, we both fall like snow
+Together, we both fall, fall
+Together, we both fall, fall
+Together, we both fall, fall
+Together, we both fall, fall
+
+Together, we both fall, fall
+Together, we both fall, fall
+Together, we both fall, fall
+Together, we both fall, fall
+
+Together, we both fall, fall (Standing at the edge of forever)
+Together, we both fall, fall (Watching the mountains fade into the weather)
+Together, we both fall, fall (Together, I can see us uniting)
+Together, we both fall, fall (Bound like a journal of leather)
+
+Together, we both fall, fall (Standing at the edge of forever)
+Together, we both fall, fall (Watching the mountains fade into the weather)
+Together, we both fall, fall (Together, I can see us uniting)
+Together, we both fall, fall (Bound like a journal of leather)
+
+Together, we both fall, fall (It doesn't get better)
+Together, we both fall, fall (It doesn't get better)
+Together, we both fall, fall (It doesn't get better)
+Together, we both fall, fall (It doesn't get better)
+`
+  },
+  {
+    id: 10,
+    title: "Bass Persuades Remixx (with Model/Actriz)",
+    artist: "MILEY",
+    lyrics: `
+Step into the scene, you won't catch an eye
+Walk into the party like the party is mine
+Paving over pastures, 'cause horses are gone
+Forgetting there's a world when this record is on
+
+Ghosts went to Bermuda 'cause there's no one to haunt
+Candy's cut with Fentanyl that nobody wants
+Spin it for a minute, make it all disappear
+If we ain't moving, baby, baby, why are we here?
+
+And I don't wanna change your mind
+The bass persuades
+Oh, I don't want to change your mind
+Let's go
+
+The kids don't wanna dance, the kids don't wanna dance
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Let's surrender to the night
+Put our bodies close together, uh-huh
+
+Glued your eyes to the telephone screen
+But you missed the hit without MTV
+Go analog, make it cinema (Yeah, yeah)
+Just look out the window, and what do you see?
+In the treetops, it's a clear shot
+Yeah, chaos is king, but you know that you can't stop, won't stop
+New fit is a monster, love it so much
+Go and hang it on a poster
+
+And I don't wanna change your mind
+The bass persuades
+Oh, I don't want to change your mind
+Let's go
+
+The kids don't wanna dance, the kids don't wanna dance
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Let's surrender to the night
+Put our bodies close together, uh-huh
+The kids don't wanna dance, the kids don't wanna dance
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Let's surrender to the night
+Put our bodies close together, uh-huh
+
+You feel something in the music
+You don't know what it is
+But I can see it in your eyes
+You wanna lose yourself to this
+Let's go
+
+Don't you want to dance?
+Don't you want to dance?
+Don't you want to dance?
+Stay forever, surrender
+Put our bodies close together, uh-huh
+
+The kids don't wanna dance, the kids don't wanna dance
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Let's surrender to the night
+Put our bodies close together, uh-huh
+
+The kids don't wanna dance, the kids don't wanna dance
+The kids don't wanna dance, the kids don't wanna dance
+We can't stay like this forever
+Stay forever, surrender
+Put our bodies close together, uh-huh
+`
+  }
+];
+  // Cole a letra de cada faixa na string `lyrics` correspondente acima.
+
+  var state = { guestName:"", ratings:{}, currentTrackId:null };
+
+  function safeLoad(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      var parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === "object") return parsed;
+    }catch(e){}
+    return null;
+  }
+  function safeSave(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  function getRating(trackId){
+    if(!state.ratings[trackId]){
+      state.ratings[trackId] = { sound:0, lyrics:0, vibe:0, hotTake:"" };
+    }
+    return state.ratings[trackId];
+  }
+  function isRated(trackId){
+    var r = state.ratings[trackId];
+    return !!(r && r.sound > 0 && r.lyrics > 0 && r.vibe > 0);
+  }
+  function ratedCount(){
+    var n = 0;
+    for(var i=0;i<tracks.length;i++){ if(isRated(tracks[i].id)) n++; }
+    return n;
+  }
+
+  var els = {
+    welcome: document.getElementById("screen-welcome"),
+    tracklist: document.getElementById("screen-tracklist"),
+    detail: document.getElementById("screen-detail"),
+    verdict: document.getElementById("screen-verdict"),
+    nameInput: document.getElementById("guest-name-input"),
+    btnStart: document.getElementById("btn-start"),
+    guestNameDisplay: document.getElementById("guest-name-display"),
+    progressFill: document.getElementById("progress-fill"),
+    progressText: document.getElementById("progress-text"),
+    tracklistEl: document.getElementById("tracklist"),
+    btnGotoVerdict: document.getElementById("btn-goto-verdict"),
+    detailNum: document.getElementById("detail-num"),
+    detailTitle: document.getElementById("detail-title"),
+    detailArtist: document.getElementById("detail-artist"),
+    lyricsBody: document.getElementById("lyrics-body"),
+    btnDetailClose: document.getElementById("btn-detail-close"),
+    hottakeInput: document.getElementById("hottake-input"),
+    btnPrev: document.getElementById("btn-prev"),
+    btnNext: document.getElementById("btn-next"),
+    btnTracklist: document.getElementById("btn-tracklist"),
+    rankOverall: document.getElementById("rank-overall"),
+    rankSound: document.getElementById("rank-sound"),
+    rankLyrics: document.getElementById("rank-lyrics"),
+    btnBackTracklist: document.getElementById("btn-back-tracklist"),
+    btnReset: document.getElementById("btn-reset")
+  };
+
+  function showScreen(name){
+    els.welcome.hidden = name !== "welcome";
+    els.tracklist.hidden = name !== "tracklist";
+    els.detail.hidden = name !== "detail";
+    els.verdict.hidden = name !== "verdict";
+    window.scrollTo(0,0);
+  }
+
+  var STAR_SVG = '<svg viewBox="0 0 24 24"><path class="star-shape" d="M12 2.5l2.9 6.32 6.85.66-5.18 4.77 1.53 6.85L12 17.9l-6.1 3.2 1.53-6.85L2.25 9.48l6.85-.66L12 2.5z"/></svg>';
+
+  function buildStars(container, metric){
+    container.innerHTML = "";
+    for(var i=1;i<=5;i++){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "star-btn";
+      b.setAttribute("data-value", i);
+      b.setAttribute("aria-label", metric + " " + i + " de 5 estrelas");
+      b.innerHTML = STAR_SVG;
+      container.appendChild(b);
+    }
+  }
+  buildStars(document.querySelector('[data-stars="sound"]'), "sonoridade");
+  buildStars(document.querySelector('[data-stars="lyrics"]'), "letra");
+  buildStars(document.querySelector('[data-stars="vibe"]'), "vibe");
+
+  function paintStars(container, value){
+    var btns = container.querySelectorAll(".star-btn");
+    btns.forEach(function(btn){
+      var v = parseInt(btn.getAttribute("data-value"), 10);
+      btn.classList.toggle("on", v <= value);
+    });
+  }
+
+  document.querySelectorAll(".stars").forEach(function(container){
+    container.addEventListener("click", function(e){
+      var btn = e.target.closest(".star-btn");
+      if(!btn) return;
+      var metric = container.getAttribute("data-stars");
+      var value = parseInt(btn.getAttribute("data-value"), 10);
+      var r = getRating(state.currentTrackId);
+      r[metric] = (r[metric] === value) ? 0 : value; // tap same star again to clear
+      paintStars(container, r[metric]);
+      safeSave();
+      renderTracklist();
+    });
+  });
+
+  els.hottakeInput.addEventListener("input", function(){
+    if(state.currentTrackId == null) return;
+    var r = getRating(state.currentTrackId);
+    r.hotTake = els.hottakeInput.value;
+    safeSave();
+  });
+
+  // ---------- Screen 1 ----------
+  els.nameInput.addEventListener("input", function(){
+    els.btnStart.disabled = els.nameInput.value.trim().length === 0;
+  });
+  els.btnStart.disabled = true;
+  els.btnStart.addEventListener("click", function(){
+    var name = els.nameInput.value.trim();
+    if(!name) return;
+    state.guestName = name;
+    safeSave();
+    els.guestNameDisplay.textContent = state.guestName;
+    renderTracklist();
+    showScreen("tracklist");
+  });
+  els.nameInput.addEventListener("keydown", function(e){
+    if(e.key === "Enter" && !els.btnStart.disabled) els.btnStart.click();
+  });
+
+  // ---------- Screen 2 : tracklist ----------
+  function renderTracklist(){
+    els.tracklistEl.innerHTML = "";
+    tracks.forEach(function(track){
+      var card = document.createElement("div");
+      card.className = "track-card";
+      card.setAttribute("role","button");
+      card.setAttribute("tabindex","0");
+
+      var rated = isRated(track.id);
+      card.innerHTML =
+        '<div class="track-num">' + String(track.id).padStart(2,"0") + '</div>' +
+        '<div class="track-meta">' +
+          '<div class="track-title"></div>' +
+          '<div class="track-artist"></div>' +
+        '</div>' +
+        '<div class="badge ' + (rated ? "done" : "pending") + '">' + (rated ? "Avaliada" : "Pendente") + '</div>';
+
+      card.querySelector(".track-title").textContent = track.title;
+      card.querySelector(".track-artist").textContent = track.artist;
+
+      card.addEventListener("click", function(){ openTrack(track.id); });
+      card.addEventListener("keydown", function(e){
+        if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openTrack(track.id); }
+      });
+
+      els.tracklistEl.appendChild(card);
+    });
+
+    var count = ratedCount();
+    var pct = Math.round((count / tracks.length) * 100);
+    els.progressFill.style.width = pct + "%";
+    els.progressText.textContent = count + " de " + tracks.length + " faixas avaliadas";
+  }
+
+  els.btnGotoVerdict.addEventListener("click", function(){
+    renderVerdict();
+    showScreen("verdict");
+  });
+
+  // ---------- Screen 3 : detail ----------
+  function trackIndexById(id){
+    for(var i=0;i<tracks.length;i++){ if(tracks[i].id === id) return i; }
+    return -1;
+  }
+
+  function openTrack(id){
+    state.currentTrackId = id;
+    var idx = trackIndexById(id);
+    var track = tracks[idx];
+    var r = getRating(id);
+
+    els.detailNum.textContent = String(track.id).padStart(2,"0");
+    els.detailTitle.textContent = track.title;
+    els.detailArtist.textContent = track.artist;
+
+    var lyricsText = (track.lyrics || "").trim();
+    if(lyricsText){
+      els.lyricsBody.textContent = lyricsText;
+      els.lyricsBody.classList.remove("empty");
+    } else {
+      els.lyricsBody.textContent = "Letra ainda não adicionada para esta faixa.";
+      els.lyricsBody.classList.add("empty");
+    }
+    els.lyricsBody.scrollTop = 0;
+
+    paintStars(document.querySelector('[data-stars="sound"]'), r.sound);
+    paintStars(document.querySelector('[data-stars="lyrics"]'), r.lyrics);
+    paintStars(document.querySelector('[data-stars="vibe"]'), r.vibe);
+    els.hottakeInput.value = r.hotTake || "";
+
+    els.btnPrev.disabled = idx <= 0;
+    els.btnPrev.style.opacity = idx <= 0 ? .35 : 1;
+    els.btnNext.textContent = "";
+    if(idx >= tracks.length - 1){
+      els.btnNext.innerHTML = 'Veredito <span class="arrow">→</span>';
+    } else {
+      els.btnNext.innerHTML = 'Próxima <span class="arrow">→</span>';
+    }
+
+    showScreen("detail");
+    els.detail.querySelector(".detail-scroll").scrollTop = 0;
+  }
+
+  els.btnPrev.addEventListener("click", function(){
+    var idx = trackIndexById(state.currentTrackId);
+    if(idx > 0) openTrack(tracks[idx-1].id);
+  });
+  els.btnNext.addEventListener("click", function(){
+    var idx = trackIndexById(state.currentTrackId);
+    if(idx < tracks.length - 1){
+      openTrack(tracks[idx+1].id);
+    } else {
+      renderVerdict();
+      showScreen("verdict");
+    }
+  });
+  els.btnTracklist.addEventListener("click", function(){
+    renderTracklist();
+    showScreen("tracklist");
+  });
+  els.btnDetailClose.addEventListener("click", function(){
+    renderTracklist();
+    showScreen("tracklist");
+  });
+
+  // ---------- Screen 4 : verdict ----------
+  function avgOf(r){
+    return (r.sound + r.lyrics + r.vibe) / 3;
+  }
+
+  function renderRankList(container, list, scoreFn, scoreLabel){
+    container.innerHTML = "";
+    if(list.length === 0){
+      var empty = document.createElement("div");
+      empty.className = "empty-note";
+      empty.textContent = "Ainda sem notas suficientes nesta categoria.";
+      container.appendChild(empty);
+      return;
+    }
+    var medals = ["🥇","🥈","🥉"];
+    list.forEach(function(entry, i){
+      var row = document.createElement("div");
+      row.className = "rank-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "");
+      var medal = i < 3 ? medals[i] : "";
+      row.innerHTML =
+        '<div class="medal">' + medal + '</div>' +
+        '<div class="rank-pos">' + (i+1) + '</div>' +
+        '<div class="rank-name"></div>' +
+        '<div class="rank-score"></div>';
+      var nameEl = row.querySelector(".rank-name");
+      var titleSpan = document.createElement("span");
+      titleSpan.textContent = entry.track.title;
+      var artistSpan = document.createElement("span");
+      artistSpan.className = "rn-artist";
+      artistSpan.textContent = entry.track.artist;
+      nameEl.appendChild(titleSpan);
+      nameEl.appendChild(artistSpan);
+      row.querySelector(".rank-score").innerHTML = scoreFn(entry) + " <small>" + scoreLabel + "</small>";
+      container.appendChild(row);
+    });
+  }
+
+  function renderVerdict(){
+    var ratedTracks = tracks.filter(function(t){ return isRated(t.id); });
+
+    var overall = ratedTracks
+      .map(function(t){ return { track:t, r:getRating(t.id), avg:avgOf(getRating(t.id)) }; })
+      .sort(function(a,b){ return b.avg - a.avg; });
+    renderRankList(els.rankOverall, overall, function(e){ return e.avg.toFixed(1); }, "/ 5");
+
+    var bySound = ratedTracks
+      .map(function(t){ return { track:t, r:getRating(t.id) }; })
+      .sort(function(a,b){ return b.r.sound - a.r.sound; })
+      .slice(0,5);
+    renderRankList(els.rankSound, bySound, function(e){ return e.r.sound; }, "/ 5");
+
+    var byLyrics = ratedTracks
+      .map(function(t){ return { track:t, r:getRating(t.id) }; })
+      .sort(function(a,b){ return b.r.lyrics - a.r.lyrics; })
+      .slice(0,5);
+    renderRankList(els.rankLyrics, byLyrics, function(e){ return e.r.lyrics; }, "/ 5");
+  }
+
+  els.btnBackTracklist.addEventListener("click", function(){
+    renderTracklist();
+    showScreen("tracklist");
+  });
+  els.btnReset.addEventListener("click", function(){
+    if(!window.confirm("Isso vai apagar todas as notas e hot takes desta audição. Continuar?")) return;
+    state.ratings = {};
+    safeSave();
+    renderTracklist();
+    renderVerdict();
+    showScreen("tracklist");
+  });
+
+  // ---------- boot ----------
+  function boot(data){
+    var loaded = data && Object.keys(data).length ? data : safeLoad();
+    if(loaded){
+      state.guestName = loaded.guestName || "";
+      state.ratings = loaded.ratings || {};
+    }
+    if(state.guestName){
+      els.nameInput.value = state.guestName;
+      els.btnStart.disabled = false;
+      els.guestNameDisplay.textContent = state.guestName;
+      renderTracklist();
+      showScreen("tracklist");
+    } else {
+      showScreen("welcome");
+    }
+
+    try{
+      if(window.claude && window.claude.hot && typeof window.claude.hot.snapshot === "function"){
+        window.claude.hot.snapshot(function(){ return state; });
+      }
+    }catch(e){}
+  }
+
+  try{
+    if(window.claude && window.claude.hot && window.claude.hot.ready){
+      window.claude.hot.ready(boot);
+    } else {
+      boot(window.claude && window.claude.hot ? window.claude.hot.data : null);
+    }
+  }catch(e){
+    boot(null);
+  }
+})();
+</script>
